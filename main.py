@@ -4,11 +4,9 @@ from vk_api.utils import get_random_id
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import threading
 import requests
-import random
 import requests
 from lxml import html
 import urllib.request
-import datetime
 import json
 from config import config
 
