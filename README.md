@@ -1,5 +1,5 @@
 # Настройка
-
+![](https://sun9-86.userapi.com/impg/k9bts5qI7_k-N2KUQOG2pqE1_Ob0KIN0OhGwrw/3MizcYCYvqo.jpg?size=720x634&quality=95&sign=971e0a2ff4c2ad2172bebbce420e76ee&type=album)
 Бот сделан на версии long poll 5.120
 1) Нам нужен установленный python
 2) Открывает cmd 
