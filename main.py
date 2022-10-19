@@ -8,7 +8,11 @@ import requests
 from lxml import html
 import urllib.request
 import json
-from config import config
+from config import config , days , check
+from datetime import datetime
+
+
+
 
 
 class Bot_Main:
@@ -26,11 +30,8 @@ class Bot_Main:
         if req.status_code == 200:
             try:
                 tree = html.fromstring(req.text)
-                hrefs = tree.xpath('/html/body/div[2]/div/div[5]/div/div[2]/div/div[2]/div/div/div/div/div/div/div/form/div/fieldset[3]/div/div/ol/li[2]/a')
                 hrefs2 = tree.xpath('/html/body/div[2]/div/div[5]/div/div[2]/div/div[2]/div/div/div/div/div/div/div/form/div/fieldset[3]/div/div/ol/li[5]/a')
-                raspisanie = hrefs[0].attrib['href']
                 izmineniya = hrefs2[0].attrib['href']
-                urllib.request.urlretrieve(f"http://smolapo.ru{raspisanie}","raspisanie.xlsx")
                 urllib.request.urlretrieve(f"http://smolapo.ru{izmineniya}","izm.docx")
                 return True
             except Exception as err:
@@ -40,20 +41,12 @@ class Bot_Main:
     
     def Sender(self,id,text,if_rasp , peer):
         if if_rasp == True:
-            result = json.loads(requests.post(self.vk.docs.getMessagesUploadServer(type='doc', peer_id=peer)['upload_url'],files={'file': open('raspisanie.xlsx', 'rb')}).text)
-            jsonAnswer = self.vk.docs.save(file=result['file'], title='raspisanie.xlsx', tags=[])
-            self.vk.messages.send(
-                peer_id= peer,
-                random_id=get_random_id(),
-                message=text ,
-                attachment=f"doc{jsonAnswer['doc']['owner_id']}_{jsonAnswer['doc']['id']}"
-                )
             result = json.loads(requests.post(self.vk.docs.getMessagesUploadServer(type='doc', peer_id=peer)['upload_url'],files={'file': open('izm.docx', 'rb')}).text)
             jsonAnswer = self.vk.docs.save(file=result['file'], title='izm.docx', tags=[])
             self.vk.messages.send(
                 peer_id= peer,
                 random_id=get_random_id(),
-                message="Изминения" ,
+                message=f"Держи расписание зайка\n\n{Bot_Main.Get_Raspisanie()}\n\nИзминения" ,
                 attachment=f"doc{jsonAnswer['doc']['owner_id']}_{jsonAnswer['doc']['id']}"
                 )
         else:
@@ -61,6 +54,37 @@ class Bot_Main:
                 user_id=id ,
                 random_id=get_random_id(),
                 message=text )
+    
+    def Get_Raspisanie():
+        from datetime import datetime
+        date1 = datetime.now()
+        date2 = datetime(day=1, month=9, year=2022)
+        timedelta = (date1 - date2)// 7
+        q = 0
+        w = ""
+        print(timedelta.days )
+        if (timedelta.days % 2) != 0:
+            q = 1
+            w = "Числитель"
+        else:
+            q = 2
+            w = "Знаменатель"
+        day = datetime.isoweekday(date1)
+        rasp = days[str(day)]
+        rasp2 = days[str(day + 1)]
+        try:
+            rasp = rasp.replace("chek" , check[f"{day}{q}"] )
+        except:
+            pass
+        try:
+            rasp2 = rasp2.replace("chek" , check[f"{int(day)+1}{q}"] )
+        except:
+            pass
+
+        text = f"{w} / {timedelta.days } Неделя\n\nСЕГОДНЯ\n{rasp}\n\nЗАВТРА\n{rasp2}"
+
+        return text
+
 
     def Processing_Message(self,event):
         message = event.obj['message']
@@ -69,7 +93,8 @@ class Bot_Main:
         if text.lower() == "расписание":
             download = Bot_Main.download_raspisanie()
             if download == True:
-                Bot_Main.Sender(self,event.obj.from_id ,f"Держи расписание зайка" , True , peer)
+
+                Bot_Main.Sender(self,event.obj.from_id ,f"" , True , peer)
             elif type(download) is str:
                 Bot_Main.Sender(self,event.obj.from_id ,f"Опять тупая ошибка в парсе\nОшибка:\n{download}" , False , peer)
             else:
